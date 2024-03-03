@@ -1,0 +1,286 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+    <title>Admin Page</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../js/ajax.js"></script>
+
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link href="../css/StyleSheet.css" rel="stylesheet" />
+
+    <script>
+
+        // will run when the document is ready
+        $(document).ready(function () {
+            $("#manageUsers").css("display", "none");
+            $("#avReport").css("display", "none");
+            $("#showTbl").click(redirecttoTbl); //manage the show and hide
+            $("#reportBtn").click(redirecttoReport); //manage the show and hide
+            $("#adminLogout").click(AdminLogOut);
+
+            setAdminApi();
+            // once the document is ready we fetch a list of users from the server
+            ajaxCall("GET", apiAdmin, "", getSuccess, error);
+            buttonEvents();
+            $("#userForm").submit(onSubmitFunc); // wire the submit event to a function called f1
+            $(document).on("click", "#showRepoBtn", ShowReport);
+
+        });
+        function AdminLogOut() {
+            window.location.href = "Users.html";
+            return false;//make sure that the page redirects to user login and doesnt act defaultly
+        }
+
+        //show the data table
+        function redirecttoTbl() {
+            $("#manageUsers").css("display", "block");
+            $("#showTbl").css("display", "none");
+            $("#reportBtn").css("display", "none");
+        }
+
+        //show the report 
+        function redirecttoReport() {
+            $("#avReport").css("display", "block");
+            $("#showTbl").css("display", "none");
+            $("#reportBtn").css("display", "none");
+        }
+
+        function setAdminApi() {
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                apiAdmin = 'https://localhost:7117/api/Users';
+            } else {
+                apiAdmin = `https://proj.ruppin.ac.il/cgroup55/test2/tar1/api/Users`;              
+            }
+        }
+
+        //takes all the fields of the user
+        function onSubmitFunc() {
+            let userAfterEdit = {
+                firstName: $("#ADfirstname").val(),
+                familyName: $("#ADlastname").val(),
+                email: $("#ADemail").val(),
+                password: $("#ADpassword").val(),
+                isAdmin: $("#ADisadmin").is(":checked"),
+                isActive: $("#ADisactive").is(":checked")
+            }
+
+            // update a new User record to the server
+            ajaxCall("PUT", `${apiAdmin}/ByAdmin`, JSON.stringify(userAfterEdit), updateSuccess, error);
+            return false;
+        }
+
+
+        // fill the form fields
+        function populateFields(userEmail) {
+            user = getUser(userEmail);
+            $("#ADfirstname").val(user.firstName);
+            $("#ADlastname").val(user.familyName);
+            $("#ADemail").val(user.email);
+            $("#ADpassword").val(user.password);
+            $("#ADisactive").attr('checked', user.isActive);
+            $("#ADisadmin").attr('checked', user.isAdmin);
+
+        }
+
+        // get a User according to its Email
+        function getUser(email) {
+            
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].email == email) {
+                    return users[i];
+                }
+            }
+            return null;
+        }
+
+        // success callback function after update
+        function updateSuccess(usersdata) {
+            tbl.clear();
+            ajaxCall("GET", apiAdmin, "", afterEdit, error);
+
+        }
+
+        function afterEdit(usersdata) {
+            usersdata = usersdata.filter(user => user.email !== 'admin@gmail.com');
+            redrawTable(tbl, usersdata);
+            swal("Updated Successfuly!", "Great Job", "success");
+        }
+
+        // redraw a datatable with new data
+        function redrawTable(tbl, data) {
+            console.log(data);
+            tbl.clear();
+            for (var i = 0; i < data.length; i++) {
+                tbl.row.add(data[i]);
+            }
+            tbl.draw();
+        }
+        function buttonEvents() {
+
+            $(document).on("click", ".saveBtn", function () {
+                
+                console.log("button", $("#checkboxbararadgmail.com"));
+                let userEmail = this.getAttribute('data-usermail');
+                console.log(userEmail);
+                let userCheckBox = "#checkbox" + userEmail.replace('@', '').replace('.', ''); // Adjust this as needed
+                console.log(userCheckBox);
+                let isChecked = $(userCheckBox).prop("checked");
+                console.log(isChecked);
+                let userToUpdate = getUser(userEmail);
+                console.log(userToUpdate);
+                userToUpdate.isActive = Number(isChecked);
+                console.log(isChecked);
+                ajaxCall("PUT", `${apiAdmin}/ByAdmin`, JSON.stringify(userToUpdate), updateSuccess, error);
+
+            });
+        }
+        // this function is activated in case of a success
+        function getSuccess(usersdata) {
+            users = usersdata.filter(user => user.email !== 'admin@gmail.com');
+            try {
+                tbl = $('#usersTable').DataTable({
+                    data: users,
+                    pageLength: 10,
+                    columns: [
+                        { data: "email" },
+                        { data: "firstName" },
+                        { data: "familyName" },
+                        { data: "password" },
+                        {
+                            data: "isActive",
+                            render: function (data, type, row, meta) {
+                                let userEmail = row.email;
+                                let checkboxId = "checkbox" + userEmail.replace('@', '').replace('.', ''); // Adjust this as needed
+                           //bararad@gmail.com--bararadgmailcom
+                                if (data == 1)
+                                    return '<input type="checkbox" id="' + checkboxId + '" checked />';
+                                else
+                                    return '<input type="checkbox" id="' + checkboxId + '" />';
+                            }
+                        },
+                        {
+                            render: function (data, type, row, meta) {
+                                let dataUser = "data-userMail='" + row.email + "'";
+                                let saveBtn = "<button type='button' class='saveBtn btn btn-primary'" + dataUser + ">Save</button>";
+                                return saveBtn;
+                            }
+                        }
+                    ]
+                });
+            } catch (err) {
+                alert(err);
+            }
+        }
+
+        // this function is activated in case of a failure
+        function error(err) {
+            console.log("Error: ", err);
+            alert("There was a server error");
+        }
+
+        function ShowReport() {
+            if ($('#selectM').val()=="") {
+                $("#showAvCityandPrice").html("You must choose month first!");
+                return;
+            }
+            let month = parseInt($('#selectM').val());
+            console.log(month);            
+            ajaxCall("GET", `${apiAdmin}/month?month=${month}`, "", SCBR, ECBR);
+        }
+
+        function SCBR(data) {
+            console.log(data);
+            if (data.length==0) {
+                $("#showAvCityandPrice").html("There is no vacations in this month");
+                return;
+            }
+            $("#showAvCityandPrice").html("");
+            for (var i = 0; i < data.length; i++) {
+                let city = data[i].city;
+                let price = data[i].averagePricePerNight;
+                let str = `City name: ${city}, Average price per night: ${price}`;
+                $("#showAvCityandPrice").append("<div>" + str + "</div>");
+            }
+        }
+
+        function ECBR(err) {
+            alert("There was a server error");
+        }
+
+    </script>
+
+</head>
+<body>
+    <button id="showTbl">Manage Users</button>
+    <div id="manageUsers">
+    <div class="container">
+            <form id="pForm">
+                <button id="adminLogout">Logout</button>
+                <table id="usersTable" class="display nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Password</th>
+                            <th>Is Active</th>
+
+                            <th></th> 
+                        </tr>
+                    </thead>
+                </table>
+            </form>
+        </div>
+    </div>
+
+     <button id="reportBtn">Average Report</button>
+     <div id="avReport">
+         <div class="container">
+             <h4>Select month: </h4>
+             <select id="selectM">
+                 <option value="">select</option>
+                 <option value="1">January</option>
+                 <option value="2">February</option>
+                 <option value="3">March</option>
+                 <option value="4">April</option>
+                 <option value="5">May</option>
+                 <option value="6">June</option>
+                 <option value="7">Jule</option>
+                 <option value="8">August</option>
+                 <option value="9">September</option>
+                 <option value="10">October</option>
+                 <option value="11">November</option>
+                 <option value="12">December</option>
+            
+             </select>
+             <br />
+             <br />
+             <button id="showRepoBtn">Show Average Report</button>
+             <br />
+             <h4>Average prices per city:</h4>             
+             <div id="showAvCityandPrice"></div>
+         </div>
+     </div>
+</body>
+</html>

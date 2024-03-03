@@ -1,0 +1,274 @@
+﻿.flatsclass, .vacayclass {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 200px;
+    height: 300px;
+    border: 1px solid black;
+    background-color: beige;
+    margin: 10px;
+    padding-top: 15px;
+    text-align: center;
+    font-size: 17px;
+}
+
+.titleLine {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#show {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+#showV {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.red-star {
+    color: purple;
+}
+
+#myFormF #myFormV #myFormU {
+    width: 500px;
+    height: 450px;
+    margin: 10px;
+    font-size: 18px;
+}
+
+#showFlats {
+    margin: 10px;
+}
+
+#reg {
+    display: none;
+}
+
+#update {
+    display: none;
+}
+
+#loginModal button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    #loginModal button:hover {
+        background-color: #0056b3;
+    }
+
+
+#loginModal .button-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+
+#loginModal input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Form styles */
+
+
+#myFormU {
+    width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+    #myFormU h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    #myFormU label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    #myFormU input[type="text"],
+    #myFormU input[type="email"],
+    #myFormU input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    #myFormU button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+        #myFormU button:hover {
+            background-color: #0056b3;
+        }
+
+        #myFormU button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+    #myFormU .error {
+        color: red;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+/* Update form styles */
+#myFormUpdate {
+    width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+    #myFormUpdate h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    #myFormUpdate label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    #myFormUpdate input[type="text"],
+    #myFormUpdate input[type="email"],
+    #myFormUpdate input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    #myFormUpdate button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+        #myFormUpdate button:hover {
+            background-color: #0056b3;
+        }
+
+        #myFormUpdate button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+
+    #myFormUpdate .error {
+        color: red;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #myFormU, #myFormUpdate {
+        width: 100%;
+    }
+}
+
+
+#showTbl, #reportBtn {
+    width: 200px;
+    height: 100px;
+    font-size: 30px;
+    margin-bottom: 20px;
+    margin-top: 100px;
+    margin-left: 600px;
+    background-color: #3498db;
+    color: white;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+    #showTbl:hover, #reportBtn:hover {
+        background-color: #2980b9; /* Darker blue on hover */
+        border-color: #2980b9;
+    }
+
+
+#adminLogout {
+    margin: 10px;
+    color: red;
+    margin-left: 1100px;
+}
+
+#showRepoBtn {
+    background-color: #007bff; 
+    color: white; 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+}
+
+ #showRepoBtn:hover {
+        background-color: #0056b3; /* Darker blue color on hover */
+ }
+
+#selectM {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+ #selectM option {
+        padding: 5px;
+        font-size: 14px;
+  }
+
+#showAvCityandPrice {
+    margin-top: 20px; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    background-color: #f9f9f9; 
+    font-size: 16px;
+}
+
+    #showAvCityandPrice div {
+        margin-bottom: 10px; 
+    }

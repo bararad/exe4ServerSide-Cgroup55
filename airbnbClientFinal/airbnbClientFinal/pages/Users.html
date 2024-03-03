@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>airbnbUser</title>
+    <link href="../css/StyleSheet.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/ajax.js"></script>
+    <script>
+        $(document).ready(function () {
+            setUserApi();
+            openModal();
+            $("#myFormU").submit(f1);
+            $("#myFormUpdate").submit(f2);
+        });
+
+        function setUserApi() {
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                apiUsers = 'https://localhost:7117/api/Users';
+            } else {
+                apiUsers = `https://proj.ruppin.ac.il/cgroup55/test2/tar1/api/Users`;
+            }
+        }
+
+        function openModal() {
+            $("#loginModal").show();
+            $("#loginModal").css("display", "block");
+        }
+
+        function closeModal() {
+            $("#loginModal").show();
+            $("#loginModal").css("display", "none");
+        }
+
+        function openUpdate() {
+            $("#update").show();
+            $("#update").css("display", "block");
+            let userString = sessionStorage.getItem("userinSession");
+            let user = JSON.parse(userString);
+            let email = user.email;
+            $("#emailUP").val(email);
+
+            $("#firstNameUP").val(user.firstName);
+            $("#familyNameUP").val(user.familyName);
+            $("#passwordUP").val(user.password);
+        }
+
+        function submitLogin() {
+            let username = $("#username").val();
+            let password = $("#userpassword").val();
+            if (username === "" || password === "") {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Username and password are required.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            else {
+                checkUserLogin(username, password);
+            }
+        }
+
+        function checkUserLogin(username, password) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+            if (!emailRegex.test(username) || !passwordRegex.test(password)) {
+                if (!(username == "admin@gmail.com" && password == "admin")) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Username or password are not in the correct form.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+            }
+
+            let user = { email: username, firstName: "", familyName: "", password: password };
+            ajaxCall("POST", `${apiUsers}/Login`, JSON.stringify(user), postLSCB, postLECB);
+
+
+        }
+        //if we got in - find user in userlist
+        function postLSCB(data) {
+            if (data.isAdmin == 1) {
+                Swal.fire({
+                    title: 'Welcome Admin!',
+                    text: 'Login successful',
+                    icon: 'success',
+                    showCancelButton: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location = "Admin.html";
+                    }
+                });
+            } else if (data.isAdmin == 0 && data.isActive == 1) {
+                sessionStorage.setItem("userinSession", JSON.stringify(data));
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Login successful',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'Move to Flats Page',
+                    cancelButtonText: 'Edit Details'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirect to flats page
+                        window.location.href = "Flats.html";
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        // Clear fields
+                        $("#username").val("");
+                        $("#userpassword").val("");
+                        // Redirect to edit details page
+                        closeModal();
+                        openUpdate();
+                    }
+                });
+            }
+            else if (data.isActive == 0) {
+                Swal.fire({
+                    title: 'User Not Active!',
+                    text: 'Access Forbidden',
+                    icon: 'error',
+                })
+                return;
+            }
+
+            else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'There is no such user. Correct details or register',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                openModal();
+            }
+        }
+
+        function postLECB() {
+            alert("There was a server error");
+        }
+
+        function registerUser() {
+            closeModal();
+            $("#reg").show();
+            $("#update").hide();
+        }
+
+
+        function validateForm() {
+            // Get form values
+            let firstName = $("#firstName").val();
+            let familyName = $("#familyName").val();
+            let email = $("#email").val();
+            let password = $("#password").val();
+
+            // Regular expressions for validation
+            let nameRegex = /^[a-zA-Z]+$/;
+            let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+            // Validate First Name
+            if (!nameRegex.test(firstName)) {
+                alert("Invalid input. Please enter only letters(A - Z, a - z).");
+                return false;
+            }
+
+            // Validate Family Name
+            if (!nameRegex.test(familyName)) {
+                alert("Invalid input. Please enter only letters(A - Z, a - z).");
+                return false;
+            }
+
+            // Validate Email
+            if (!emailRegex.test(email)) {
+                alert("This field must be a valid email address. Please enter a valid email address in the format example@example.com");
+                return false;
+
+            }
+
+            // Validate Password
+            if (!passwordRegex.test(password)) {
+                alert("Invalid password. Your password must contain at least one uppercase letter, one digit, and be at least 8 characters long.");
+                return false;
+
+            }
+            return true;
+        }
+
+        function validateFormUpdate() {
+            // Get form values
+            let firstName = $("#firstNameUP").val();
+            let familyName = $("#familyNameUP").val();
+            let password = $("#passwordUP").val();
+
+            // Regular expressions for validation
+            let nameRegex = /^[a-zA-Z]+$/;
+            let passwordRegex = /^(?=.*[A-Z])(?=.*\d).{7,}$/;
+
+            // Validate First Name
+            if (!nameRegex.test(firstName)) {
+                alert("Invalid input. Please enter only letters(A - Z, a - z).");
+                return false;
+            }
+
+            // Validate Family Name
+            if (!nameRegex.test(familyName)) {
+                alert("Invalid input. Please enter only letters(A - Z, a - z).");
+                return false;
+            }
+
+            // Validate Password
+            if (!passwordRegex.test(password)) {
+                alert("Invalid password. Your password must contain at least one uppercase letter, one digit, and be at least 8 characters long.");
+                return false;
+
+            }
+            return true;
+        }
+
+
+        function f1() {
+            createUser();
+            return false;
+        }
+
+        function createUser() {
+            if (validateForm()) {
+                let newUser = {
+                    firstName: $("#firstName").val(),
+                    familyName: $("#familyName").val(),
+                    email: $("#email").val(),
+                    password: $("#password").val(),
+                    isAdmin: 0,
+                    isActive: 1
+                }
+                console.log(newUser);
+                ajaxCall("POST", apiUsers, JSON.stringify(newUser), postUSCB, postUECB);
+            }
+        }
+        function postUSCB(data) {
+            if (data == 1) {
+                Swal.fire({
+                    title: 'User added!',
+                    text: 'successful registration',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                clearFields();
+                $("#reg").hide();
+                openModal();
+            }
+            else {
+                alert("email already exist");
+            }
+        }
+        function postUECB(err) {
+            console.log("err");
+            alert("There was a server error");
+        }
+
+        function clearFields() {
+            $("#firstName").val("");
+            $("#familyName").val("");
+            $("#email").val("");
+            $("#password").val("");
+        }
+
+        function f2() {
+            updateUser();
+            return false;
+        }
+
+        function updateUser() {
+            if (validateFormUpdate()) {
+                let newUser = {
+                    firstName: $("#firstNameUP").val(),
+                    familyName: $("#familyNameUP").val(),
+                    email: $("#emailUP").val(),
+                    password: $("#passwordUP").val()
+
+                }
+                console.log(newUser);
+                ajaxCall("PUT", apiUsers, JSON.stringify(newUser), putSCB, putECB);
+            }
+        }
+
+        function putSCB(data) {
+            if (data == 1) {
+                alert("yay user updated");
+                $("#update").hide();
+                openModal();
+                window.location.href = "Flats.html";
+            }
+            else {
+                alert("error");
+            }
+        }
+        function putECB(err) {
+            alert("There was a server error");
+        }
+
+    </script>
+</head>
+<body>
+
+    <div id="login">
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <h1>User Login</h1>
+                <label for="username">Email:</label>
+                <input type="text" id="username" required>
+                <label for="userpassword">Password:</label>
+                <input type="password" id="userpassword" required>
+                <div class="button-container">
+                    <button type="submit" onclick="submitLogin()">Login</button>
+                    <button onclick="registerUser()">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="reg">
+        <form id="myFormU">
+            <h1>User Registration</h1>
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required>
+            <br />
+            <label for="familyName">Family Name:</label>
+            <input type="text" id="familyName" name="familyName" required>
+            <br />
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <br />
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br />
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <div id="update">
+        <form id="myFormUpdate">
+            <h1>User Update details</h1>
+            <label for="firstNameUP">First Name:</label>
+            <input type="text" id="firstNameUP" name="firstNameUP" required>
+            <br />
+            <label for="familyNameUP">Family Name:</label>
+            <input type="text" id="familyNameUP" name="familyNameUP" required>
+            <br />
+            <label for="emailUP">Email:</label>
+            <input type="email" id="emailUP" name="emailUP" readonly>
+            <br />
+            <label for="passwordUP">Password:</label>
+            <input type="password" id="passwordUP" name="passwordUP" required>
+            <br />
+            <button type="submit">Update</button>
+        </form>
+    </div>
+</body>
+</html>

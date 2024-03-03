@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>airbnb vacations</title>
+
+    <link href="../css/StyleSheet.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../js/ajax.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous">
+
+    </script>
+    <script>
+
+        $(document).ready(function () {
+            setVacayApi();
+            setIds();
+            setToday();
+            setuserinsession();
+            $(document).on("click", "#showVaca", showVacationsByUserId);
+            $(document).on("click", "#logOut", LogOut);
+            $("#startdateDT").on("blur", setMinstart);
+            $("#myFormV").submit(formSub);
+
+        })
+
+        function setuserinsession() {
+            let userinsession = JSON.parse(sessionStorage.getItem("userinSession"));
+            let fullname = (userinsession.firstName + " " + userinsession.familyName).toUpperCase();
+            $("#usernameInp").append(fullname);
+        }
+        function LogOut() {
+            window.location.href = "Users.html";
+            // Clear session storage
+            sessionStorage.clear();
+        }
+
+        function setVacayApi() {
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") { apiVacation = 'https://localhost:7117/api/Vacations'; }
+            else { apiVacation = `https://proj.ruppin.ac.il/cgroup55/test2/tar1/api/Vacations`; }
+        }
+
+        function setIds() {
+            let flatid = sessionStorage.getItem("id");
+            let userFromSession = sessionStorage.getItem("userinSession");
+            let user = JSON.parse(userFromSession);
+            let userId = user.email;
+            $("#flatidTB").val(flatid);
+            $("#uservTB").val(userId);
+
+        }
+
+        function setToday() {
+            let today = new Date().toISOString().split('T')[0];//today without time
+            $("#startdateDT").attr('min', today);
+        }
+
+        function setMinstart() {
+            let startdate = $("#startdateDT").val();
+
+            const mindate = new Date(startdate);
+            mindate.setDate(mindate.getDate() + 1);
+            let minenddate = new Date(mindate).toISOString().split('T')[0];
+            $("#enddateDT").attr('min', minenddate);//have to stay 1 night min
+
+            const maxdate = new Date(startdate);
+            maxdate.setDate(maxdate.getDate() + 19);
+            let maxenddate = new Date(maxdate).toISOString().split('T')[0];
+            $("#enddateDT").attr('max', maxenddate);//can stay 20 days tops
+
+        }
+
+        function showVacationsByUserId() {
+            let email = $("#uservTB").val();
+            ajaxCall("GET", `${apiVacation}/${email}`, "", getvSCB, getvECB);
+        }
+
+        function getvSCB(data) {
+            if (data.length == 0) {
+                $("#showV").append("No vacations exist for your user in this apartment");
+            }
+            else {
+                $("#showV").html("");
+                for (var i = 0; i < data.length; i++) {
+                    let vacationDiv = `<p>vacation num: ${data[i].id}</p>
+                                       <p>user id: ${data[i].userid}</p>
+                                       <p>flat id: ${data[i].flatid}</p>
+                                       <p>start date: ${data[i].startdate.split('T')[0]}</p>
+                                       <p>end date: ${data[i].enddate.split('T')[0]}</p>`;
+
+                    let divtoAdd = $("<div>").html(vacationDiv);
+                    divtoAdd.addClass("vacayclass");
+                    $("#showV").append(divtoAdd);
+                }
+            }
+        }
+        function getvECB(err) {
+            alert("server error");
+        }
+        function formSub() {
+            createVacation();
+            return false;
+        }
+
+        function createVacation() {
+
+            const sdate = new Date($("#startdateDT").val());
+            const edate = new Date($("#enddateDT").val());
+
+            let Vacation =
+            {
+                id: "",
+                userid: $("#uservTB").val(),
+                flatid: $("#flatidTB").val(),
+                startdate: sdate,
+                enddate: edate,
+            }
+
+            ajaxCall("POST", apiVacation, JSON.stringify(Vacation), postvSCB, postvECB);
+
+        }
+
+        function postvSCB(data) {
+            if (data == 1) {
+                swal("Submitted to the server!", "Great Job", "success");
+                $("#startdateDT").val("");
+                $("#enddateDT").val("");
+
+            }
+            else {
+                alert("The apartment is rented on these dates, it is not possible to make a reservation");
+            }
+        }
+        function postvECB(err) {
+            alert("server connection error");
+        }
+    </script>
+</head>
+<body>
+
+
+    <div>
+        <div class="container">
+            <div class="titleLine">
+                <h2>Insert A new Vacation</h2>
+                <h4 id="usernameInp">Hello </h4>
+                <button id="logOut">Log Out</button>
+            </div>
+            <form id="myFormV">
+
+
+                <div class="form-group">
+                    <label for="uservTB"><span class="red-star">★ </span>User ID</label>
+                    <input type="text" class="form-control" id="uservTB" readonly />
+                </div>
+                <br />
+                <div class="form-group">
+                    <label for="flatidTB"><span class="red-star">★ </span>Flat ID</label>
+                    <input type="text" class="form-control" id="flatidTB" readonly />
+                </div><br />
+                <div class="form-group">
+                    <label for="startdateDT"><span class="red-star">★ </span>Start Date</label>
+                    <input type="date" class="form-control" id="startdateDT" placeholder="Enter the start date" required />
+                </div><br />
+                <div class="form-group">
+                    <label for="enddateDT"><span class="red-star">★ </span>End Date</label>
+                    <input type="date" class="form-control" id="enddateDT" placeholder="Enter the end date" required />
+                </div>
+                <br />
+
+                <input type="submit" value="Order vacation" />
+                <br />
+            </form>
+            <br />
+            <div id="showvacay">
+                <h3>Get all my vacations</h3>
+                <input type="button" id="showVaca" value="Show My Vacations" />
+                <div id="showV">
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+</body>
+</html>
